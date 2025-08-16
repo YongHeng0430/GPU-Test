@@ -1,65 +1,80 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white"
-    android:orientation="vertical"
-    android:padding="24dp">
-    
-    <!-- 标题部分 -->
-    <TextView
+    android:fitsSystemWindows="true">
+
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="GPU Test"
-        android:textColor="#212121"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:paddingBottom="16dp"/>
-    
-    <!-- 信息面板 -->
+        android:fitsSystemWindows="true">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:title="GPU Test"
+            app:titleCentered="true"
+            app:menu="@menu/main_menu" />
+    </com.google.android.material.appbar.AppBarLayout>
+
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="#FFF5F5F5"
+        android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="16dp">
-        
-        <TextView
-            android:id="@+id/gpuInfoText"
+        android:padding="24dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <!-- 信息卡片 -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/loading"
-            android:textColor="#212121"
-            android:textSize="16sp"/>
+            app:cardCornerRadius="12dp"
+            app:strokeColor="?attr/colorOutline">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/gpuInfoText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/loading"
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- 操作按钮 -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/glTestBtn"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="@string/gl_test_btn"
+            app:icon="@drawable/ic_opengl" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/vulkanTestBtn"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/vulkan_test_btn"
+            app:icon="@drawable/ic_vulkan" />
+
+        <!-- 页脚 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="32dp"
+            android:text="@string/version_info"
+            android:textAppearance="@style/TextAppearance.Material3.BodySmall" />
     </LinearLayout>
-    
-    <!-- 操作按钮 - 添加圆角效果 -->
-    <Button
-        android:id="@+id/glTestBtn"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:background="@drawable/button_background"
-        android:text="@string/gl_test_btn"
-        android:textColor="#212121"
-        android:textAllCaps="false"/>
-    
-    <Button
-        android:id="@+id/vulkanTestBtn"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:background="@drawable/button_background"
-        android:text="@string/vulkan_test_btn"
-        android:textColor="#212121"
-        android:textAllCaps="false"/>
-    
-    <!-- 页脚 -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="24dp"
-        android:text="@string/version_info"
-        android:textColor="#757575"
-        android:textSize="12sp"/>
-</LinearLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

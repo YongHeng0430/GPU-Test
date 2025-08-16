@@ -1,17 +1,20 @@
 package com.uniaball.gputest;
 
-import android.app.Activity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.opengl.GLES32;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Build;
 import android.util.Log;
 import android.view.WindowManager;
+import android.view.animation.AlphaAnimation;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import com.google.android.material.card.MaterialCardView;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -22,10 +25,13 @@ import java.util.Random;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-public class GLTestActivity extends Activity {
+import androidx.activity.EdgeToEdge;
+
+public class GLTestActivity extends AppCompatActivity {
     private static final String TAG = "MassiveSphereDemo";
     private GLSurfaceView glSurfaceView;
-    private TextView fpsTextView, infoTextView, countdownTextView;
+    private TextView fpsTextView, infoTextView, performanceTextView;
+    private MaterialCardView performanceCardView;
     private int frameCount;
     private long lastTime;
     private long startTime;
@@ -36,10 +42,16 @@ public class GLTestActivity extends Activity {
     private int testFrameCount = 0;
     private int testDuration = 5000; // 5秒测试时间
     
+    private int sphereCount; // 球体数量（从设置中获取）
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gltest);
+        EdgeToEdge.enable(this);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            getWindow().setNavigationBarContrastEnforced(false);
+        }
         
         // 禁止屏幕休眠
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -47,7 +59,15 @@ public class GLTestActivity extends Activity {
         FrameLayout container = findViewById(R.id.gl_container);
         fpsTextView = findViewById(R.id.fpsTextView);
         infoTextView = findViewById(R.id.infoTextView);
-        countdownTextView = findViewById(R.id.countdownTextView);
+        performanceTextView = findViewById(R.id.performanceTextView);
+        performanceCardView = findViewById(R.id.performanceCardView);
+        
+        // 从设置中获取球体数量
+        sphereCount = SettingsActivity.getSphereCount(this);
+        
+        // 更新UI显示
+        String testTitle = "大规模球体渲染测试 - " + String.format("%,d", sphereCount) + "个球体";
+        infoTextView.setText(testTitle);
         
         glSurfaceView = new GLSurfaceView(this);
         glSurfaceView.setEGLContextClientVersion(3);
@@ -58,8 +78,6 @@ public class GLTestActivity extends Activity {
         startTime = System.currentTimeMillis();
         startFPSCounter();
         
-        infoTextView.setText("大规模球体渲染测试 - 100,000个球体");
-        
         // 直接开始测试
         startPerformanceTest();
     }
@@ -69,7 +87,6 @@ public class GLTestActivity extends Activity {
         isTesting = true;
         testStartTime = System.currentTimeMillis();
         testFrameCount = 0;
-        countdownTextView.setText("渲染测试中...5秒后结束");
         
         // 5秒后自动结束测试
         handler.postDelayed(() -> endPerformanceTest(), testDuration);
@@ -84,8 +101,15 @@ public class GLTestActivity extends Activity {
         String performanceRating = getPerformanceRating(avgFPS);
         String result = String.format("测试结束!\n平均FPS: %.1f\n性能评级: %s", avgFPS, performanceRating);
         
-        Toast.makeText(this, result, Toast.LENGTH_LONG).show();
-        countdownTextView.setText(result);
+        // 在底部显示性能评级
+        performanceTextView.setText(result);
+        performanceCardView.setVisibility(android.view.View.VISIBLE);
+        
+        // 添加渐显动画
+        AlphaAnimation fadeIn = new AlphaAnimation(0.0f, 1.0f);
+        fadeIn.setDuration(1500);
+        fadeIn.setFillAfter(true);
+        performanceCardView.startAnimation(fadeIn);
     }
     
     // GPU性能评级标准
@@ -106,6 +130,7 @@ public class GLTestActivity extends Activity {
     }
     
     private void startFPSCounter() {
+        lastTime = System.currentTimeMillis();
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -114,10 +139,12 @@ public class GLTestActivity extends Activity {
                 if (elapsed > 0) {
                     final float fps = (frameCount * 1000f) / elapsed;
                     runOnUiThread(() -> fpsTextView.setText(String.format("FPS: %.1f | Time: %ds", fps,
-                            (System.currentTimeMillis() - startTime) / 1000)));
+                            (currentTime - startTime) / 1000)));
                 }
                 frameCount = 0;
                 lastTime = currentTime;
+                
+                // 即使测试结束也继续计数
                 handler.postDelayed(this, 1000);
             }
         }, 1000);
@@ -158,8 +185,6 @@ public class GLTestActivity extends Activity {
         private int indexCount;
         private int instanceBuffer;
         private int vao; // 顶点数组对象(VAO)
-        
-        private static final int SPHERE_COUNT = 100000; // 十万个球体
         
         // 模型、视图、投影矩阵
         private final float[] viewMatrix = new float[16];
@@ -276,7 +301,7 @@ public class GLTestActivity extends Activity {
             // 检查OpenGL ES版本
             String version = GLES32.glGetString(GLES32.GL_VERSION);
             if (version == null || !version.startsWith("OpenGL ES 3.")) {
-                runOnUiThread(() -> {
+                GLTestActivity.this.runOnUiThread(() -> {
                     Toast.makeText(GLTestActivity.this, "需要 OpenGL ES 3.0+ 支持", Toast.LENGTH_LONG).show();
                     finish();
                 });
@@ -438,7 +463,7 @@ public class GLTestActivity extends Activity {
                     indexCount,
                     GLES32.GL_UNSIGNED_SHORT,
                     0,
-                    SPHERE_COUNT
+                    GLTestActivity.this.sphereCount // 使用设置的球体数量
             );
             
             // 解绑VAO和索引缓冲区
@@ -454,7 +479,7 @@ public class GLTestActivity extends Activity {
             // 生成球体顶点数据
             int vertexCount = (segments + 1) * (segments + 1);
             FloatBuffer vertices = ByteBuffer.allocateDirect(vertexCount * 3 * 4)
-                    .order(ByteOrder.nativeOrder()).asFloatBuffer();
+                    .order(ByteOrder.nativeOrder()).asFloatBuffer(); // 修正拼写错误
             
             FloatBuffer normals = ByteBuffer.allocateDirect(vertexCount * 3 * 4)
                     .order(ByteOrder.nativeOrder()).asFloatBuffer();
@@ -526,10 +551,10 @@ public class GLTestActivity extends Activity {
         
         private void createInstances() {
             // 生成实例数据 (位置和动画参数)
-            float[] instanceData = new float[SPHERE_COUNT * 6]; // 每个实例6个浮点数 (位置xyz + 参数xyz)
+            float[] instanceData = new float[GLTestActivity.this.sphereCount * 6]; // 每个实例6个浮点数 (位置xyz + 参数xyz)
             
             Random rand = new Random();
-            for (int i = 0; i < SPHERE_COUNT; i++) {
+            for (int i = 0; i < GLTestActivity.this.sphereCount; i++) {
                 // 位置 (分布在100x100x100的空间内)
                 float x = (rand.nextFloat() - 0.5f) * 200.0f;
                 float y = (rand.nextFloat() - 0.5f) * 200.0f;
@@ -559,7 +584,7 @@ public class GLTestActivity extends Activity {
             
             GLES32.glBindBuffer(GLES32.GL_ARRAY_BUFFER, instanceBuffer);
             GLES32.glBufferData(GLES32.GL_ARRAY_BUFFER, instanceData.length * 4, instanceBufferData, GLES32.GL_STATIC_DRAW);
-            
+                     
             // 解绑缓冲区
             GLES32.glBindBuffer(GLES32.GL_ARRAY_BUFFER, 0);
         }

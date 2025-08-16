@@ -1,0 +1,4 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Material 3 主题 -->
+    <style name="Theme.GPUTest" parent="Theme.Material3.DynamicColors.DayNight.NoActionBar" />
+</resources>

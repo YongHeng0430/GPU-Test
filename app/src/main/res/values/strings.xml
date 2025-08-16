@@ -1,5 +1,4 @@
 <resources>
-
     <string name="loading">Loading graphics info...</string>
     <string name="fps_text_default">FPS: -- | Time: --</string>
     <string name="test_title">大规模球体渲染测试 - 100,000个球体</string>
@@ -7,6 +6,12 @@
     <string name="app_name">GPU Test</string>
     <string name="gl_test_btn">OpenGL ES测试</string>
     <string name="vulkan_test_btn">检测Vulkan 1.1支持</string>
-    <string name="version_info">Version 1.4.0 | Made by Uniaball</string>
-
+    <string name="version_info">Version 1.5.1 | Made by Uniaball</string>
+    
+    <!-- 设置页面字符串 -->
+    <string name="settings_title">设置</string>
+    <string name="gl_test_settings">GL ES测试设置</string>
+    <string name="sphere_count_title">球体数量</string>
+    <string name="sphere_count_range">范围: 10,000 - 500,000</string>
+    <string name="sphere_count_warning">注意：增加球体数量将显著提高GPU负载</string>
 </resources>

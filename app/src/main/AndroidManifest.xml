@@ -2,7 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- 仅保留必要的OpenGL ES功能要求 -->
     <uses-feature
         android:glEsVersion="0x00030000"
         android:required="true" />
@@ -14,6 +13,7 @@
 
         <activity
             android:name=".MainActivity"
+            android:theme="@style/Theme.GPUTest"
             android:exported="true"
             android:screenOrientation="portrait">
             <intent-filter>
@@ -24,7 +24,13 @@
 
         <activity
             android:name=".GLTestActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.GPUTest.NoActionBar" />
+            android:theme="@style/Theme.GPUTest"
+            android:screenOrientation="portrait" />
+            
+        <activity
+            android:name=".SettingsActivity"
+            android:theme="@style/Theme.GPUTest"
+            android:exported="true"
+            android:screenOrientation="portrait" />
     </application>
 </manifest>
